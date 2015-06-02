@@ -1,0 +1,31 @@
+<script type="text/javascript">
+$(function(){
+	$('#deleteModal').on('shown.bs.modal', function (event) {
+		var button = $(event.relatedTarget);
+		$("#formDelete").attr('action', button.data('url'));
+	}).on('hide.bs.modal', function(){
+		$("#formDelete").attr('action', '');
+	});	
+	$("#doDelete").on('click', function(){
+		$("#formDelete").submit();
+	});
+});
+</script>
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">確認</h4>
+      </div>
+      <div class="modal-body">
+        <p>削除します。よろしいですか？</p>
+		<form action="" method="post" id="formDelete"></form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="doDelete">Delete</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
