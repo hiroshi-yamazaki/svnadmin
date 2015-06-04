@@ -8,37 +8,33 @@
 <div class="container">
     <div class="row">
 		<div class="page-header">
-	        <div class="span6">
-	            {{template "flash.html" .}}
-	        </div>
+        	{{template "flash.html" .}}
+		
+			<form action="{{url "Svn.Create"}}" method="post" class="form-inline" id="formCreate">
+				{{with $field := field "Name" .}}
+				<input type="text" name="{{$field.Name}}" value="{{$field.Flash}}" class="form-control" required placeholder="Repository Name">
+				{{end}}
+				
+				<input type="submit" class="btn btn-primary" value="Create Repository">
+			</form>
+		</div>
 			
-			<div class="clearfix">
-				<form action="{{url "Svn.Create"}}" method="post" class="form form-inline">
-					{{with $field := field "Name" .}}
-					<input type="text" name="{{$field.Name}}" value="{{$field.Flash}}" class="form-control" required>
-					{{end}}
-					
-					<input type="submit" class="btn btn-primary" value="Create Repository">
-				</form>
-			</div>
-			
-			<div class="clearfix">
-		        <table class="table table-striped table-hover">
-		            <tr>
-		                <th>Repository Name</th>
-						<th>Operation</th>
-		            </tr>
-					{{range $i, $repo := $.repos}}
-					<tr>
-						<td>{{$repo}}</td>
-						<td>
-						</td>
-					</tr>
-					{{end}}
-		        </table>
-			</div>
-	   	</div>
+		<div class="page-header">
+	        <table class="table table-striped table-hover">
+	            <tr>
+	                <th>Repository Name</th>
+					<th>Url</th>
+	            </tr>
+				{{range $i, $repo := $.repos}}
+				<tr>
+					<td>{{$repo}}</td>
+					<td><a href="{{$.svn_url_base}}{{$repo}}">{{$.svn_url_base}}{{$repo}}</a></td>
+				</tr>
+				{{end}}
+	        </table>
+		</div>
 	</div>
 </div>
+
 
 {{template "footer.html" .}}
