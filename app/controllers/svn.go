@@ -6,12 +6,19 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"svnadmin/app/routes"
 	"regexp"
+	"svnadmin/app/routes"
 )
 
 type Svn struct {
 	App
+}
+
+type Svninfo struct {
+	Name     string
+	Url      string
+	LastDate string
+	LastRev  string
 }
 
 func (c Svn) getSvnParentPath() string {
@@ -19,38 +26,54 @@ func (c Svn) getSvnParentPath() string {
 }
 
 func (c Svn) getSvnAdminBin() string {
-	return revel.Config.StringDefault("svn.admin_bin", "")
+	return revel.Config.StringDefault("svn.svnadmin", "svnadmin")
+}
+
+func (c Svn) getSvnLookBin() string {
+	return revel.Config.StringDefault("svn.svnlook", "svnlook")
 }
 
 func (c Svn) Index() revel.Result {
 	parent_path := c.getSvnParentPath()
 	repos, _ := filepath.Glob(parent_path + "/*")
 
-	for i, path := range repos {
-		repos[i] = filepath.Base(path)
+	svn_url_base := revel.Config.StringDefault("svn.url", "http://xxxxxxxxx/")
+
+	svnlook := c.getSvnLookBin()
+
+	var svninfos []Svninfo
+	for _, path := range repos {
+		date, _ := exec.Command(svnlook, "date", path).Output()
+		rev, _ := exec.Command(svnlook, "youngest", path).Output()
+
+		name := filepath.Base(path)
+		info := Svninfo{
+			Name:     name,
+			Url:      svn_url_base + name,
+			LastDate: string(date),
+			LastRev:  "r" + string(rev),
+		}
+
+		svninfos = append(svninfos, info)
 	}
 
-	svn_url_base := revel.Config.StringDefault("svn.url", "http://xxxxxxxxx/")
-	
-	return c.Render(repos, svn_url_base)
+	return c.Render(svninfos)
 }
 
 func (c Svn) Create(Name string) revel.Result {
 	repo := c.getSvnParentPath() + "/" + Name
-		
+
 	_, e := os.Stat(repo)
 	is_exists := false
 	if e != nil {
 		is_exists = true
 	}
-	
-	re := regexp.MustCompile("^[a-z0-9_.-]+$")
-	
+
 	c.Validation.Required(Name).Message("リポジトリ名は必須です。")
-	c.Validation.Required(Name != "websvnadmin").Message("websvnadminは予約語のた指定できません。")
-	c.Validation.Required(Name != "svn").Message("svnは予約語のた指定できません。")
-	c.Validation.Required(is_exists).Message("入力のリポジトリ名はすでに存在しています。")
-	c.Validation.Match(Name, re).Message("リポジトリ名は半角英数記号で指定してください。")
+	c.Validation.Required(Name != "websvnadmin").Message(Name + "は予約語のた指定できません。")
+	c.Validation.Required(Name != "svn").Message(Name + "は予約語のた指定できません。")
+	c.Validation.Required(is_exists).Message(Name + "はすでに存在しています。")
+	c.Validation.Match(Name, regexp.MustCompile("^[a-z0-9_.-]+$")).Message("リポジトリ名は半角英数記号で指定してください。")
 	if c.Validation.HasErrors() {
 		c.Validation.Keep()
 		c.FlashParams()
@@ -60,8 +83,8 @@ func (c Svn) Create(Name string) revel.Result {
 	err := exec.Command("sudo", c.getSvnAdminBin(), "create", repo).Run()
 	if err != nil {
 		c.FlashParams()
-		fmt.Println(err)
-		
+		revel.TRACE.Println(err)
+
 		c.Flash.Error(fmt.Sprintf("%sの作成に失敗しました。", Name))
 		return c.Redirect(routes.Svn.Index())
 	}
@@ -69,9 +92,11 @@ func (c Svn) Create(Name string) revel.Result {
 	owner := revel.Config.StringDefault("svn.owner", "apache")
 	group := revel.Config.StringDefault("svn.group", "apache")
 	permit := revel.Config.StringDefault("svn.permit", "775")
-	
+
 	exec.Command("sudo", "chown", "-R", fmt.Sprintf("%s.%s", owner, group), repo).Run()
 	exec.Command("sudo", "chmod", "-R", permit, repo).Run()
+
+	revel.TRACE.Println(Name)
 
 	c.Flash.Success(fmt.Sprintf("%sを作成しました。", Name))
 	return c.Redirect(routes.Svn.Index())
