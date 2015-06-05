@@ -19,6 +19,7 @@ type Svninfo struct {
 	Url      string
 	LastDate string
 	LastRev  string
+	LastAuthor string
 }
 
 func (c Svn) getSvnParentPath() string {
@@ -33,25 +34,30 @@ func (c Svn) getSvnLookBin() string {
 	return revel.Config.StringDefault("svn.svnlook", "svnlook")
 }
 
+func (c Svn) getSvnUrlBase() string {
+	return revel.Config.StringDefault("svn.url", "http://xxxxxxxxx/")
+}
+
 func (c Svn) Index() revel.Result {
 	parent_path := c.getSvnParentPath()
 	repos, _ := filepath.Glob(parent_path + "/*")
 
-	svn_url_base := revel.Config.StringDefault("svn.url", "http://xxxxxxxxx/")
-
+	svn_url_base := c.getSvnUrlBase()
 	svnlook := c.getSvnLookBin()
 
 	var svninfos []Svninfo
 	for _, path := range repos {
 		date, _ := exec.Command(svnlook, "date", path).Output()
 		rev, _ := exec.Command(svnlook, "youngest", path).Output()
-
+		author, _ := exec.Command(svnlook, "author", path).Output()
+		
 		name := filepath.Base(path)
 		info := Svninfo{
 			Name:     name,
 			Url:      svn_url_base + name,
 			LastDate: string(date),
 			LastRev:  "r" + string(rev),
+			LastAuthor: string(author),
 		}
 
 		svninfos = append(svninfos, info)
