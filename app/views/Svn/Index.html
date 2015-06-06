@@ -18,8 +18,12 @@
 				<input type="submit" class="btn btn-primary" value="Create Repository">
 			</form>
 		</div>
-			
-		<div class="page-header">
+		
+		{{template "page_items.html" .}}
+		
+		<div class="">
+		{{template "pager.html" .}}
+		
 	        <table class="table table-striped table-hover">
 	            <tr>
 	                <th>Repository Name</th>
@@ -38,7 +42,10 @@
 				</tr>
 				{{end}}
 	        </table>
+			
+		{{template "pager.html" .}}
 		</div>
+		
 	</div>
 </div>
 

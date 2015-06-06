@@ -1,0 +1,44 @@
+<div class="pull-right">
+    <ul class="pagination pagination-sm">
+        <li class="first">
+		{{if eq $.page.Current $.page.First}}
+		<span>First</span>
+		{{else}}
+		<a href="?page={{$.page.First}}">First</a>
+		{{end}}
+		</li>
+		
+		<li class="previous">
+		{{if eq $.page.Current $.page.Prev}}
+		<span>Prev</span>
+		{{else}}
+        <a href="?page={{$.page.Prev}}">Prev</a>
+		{{end}}
+		</li>
+		
+        {{range $i, $v := $.page.Pages}}
+        <li class="{{if eq $v $.page.Current}}active{{end}}">{{if eq $v $.page.Current}}
+		<span>{{$v}}</span>
+		{{else}}
+		<a href="?page={{$v}}">{{$v}}</a>
+		{{end}}
+		</li>
+        {{end}}
+		
+		<li class="next">
+		{{if eq $.page.Current $.page.Next}}
+		<span>Next</span>
+		{{else}}
+        <a href="?page={{$.page.Next}}">Next</a>
+		{{end}}
+		</li>
+		
+        <li class="last">
+		{{if eq $.page.Current $.page.Last}}
+		<span>Last</span>
+		{{else}}
+		<a href="?page={{$.page.Last}}">Last</a>
+		{{end}}
+		</li>
+    </ul>
+</div>
