@@ -16,28 +16,8 @@ type Svn struct {
 	App
 }
 
-func (c Svn) getSvnParentPath() string {
-	return revel.Config.StringDefault("svn.parent_path", "/home/svn/repos")
-}
-
-func (c Svn) getSvnAdminBin() string {
-	return revel.Config.StringDefault("svn.svnadmin", "svnadmin")
-}
-
-func (c Svn) getSvnOwner() string {
-	return revel.Config.StringDefault("svn.owner", "apache")
-}
-
-func (c Svn) getSvnGroup() string {
-	return revel.Config.StringDefault("svn.group", "apache")
-}
-
-func (c Svn) getSvnPermission() string {
-	return revel.Config.StringDefault("svn.permit", "775")
-}
-
 func (c Svn) Index() revel.Result {
-	parent_path := c.getSvnParentPath()
+	parent_path := libs.GetSvnParentPath()
 	repos, _ := filepath.Glob(parent_path + "/*")
 
 	pager := &libs.Pager{
@@ -66,7 +46,7 @@ func (c Svn) IsExists(Repo string) bool {
 }
 
 func (c Svn) Create(Name string) revel.Result {
-	repo := c.getSvnParentPath() + "/" + Name
+	repo := libs.GetSvnParentPath() + "/" + Name
 
 	c.Validation.Required(Name).Message("リポジトリ名は必須です。")
 	c.Validation.Required(Name != "websvnadmin").Message(Name + "は予約語のた指定できません。")
@@ -79,26 +59,26 @@ func (c Svn) Create(Name string) revel.Result {
 		return c.Redirect(routes.Svn.Index())
 	}
 
-	err := exec.Command("sudo", c.getSvnAdminBin(), "create", repo).Run()
+	err := exec.Command("sudo", libs.GetSvnAdminBin(), "create", repo).Run()
 	if err != nil {
 		c.FlashParams()
-		revel.TRACE.Println(err)
+		revel.INFO.Println(err)
 
 		c.Flash.Error(fmt.Sprintf("%sの作成に失敗しました。", Name))
 		return c.Redirect(routes.Svn.Index())
 	}
 
-	err = exec.Command("sudo", "chown", "-R", fmt.Sprintf("%s.%s", c.getSvnOwner(), c.getSvnOwner()), repo).Run()
+	err = exec.Command("sudo", "chown", "-R", fmt.Sprintf("%s.%s", libs.GetSvnOwner(), libs.GetSvnOwner()), repo).Run()
 	if err != nil {
-		revel.TRACE.Println(err)
+		revel.INFO.Println(err)
 	}
 
-	err = exec.Command("sudo", "chmod", "-R", c.getSvnPermission(), repo).Run()
+	err = exec.Command("sudo", "chmod", "-R", libs.GetSvnPermission(), repo).Run()
 	if err != nil {
-		revel.TRACE.Println(err)
+		revel.INFO.Println(err)
 	}
 
-	revel.TRACE.Println(Name)
+	revel.INFO.Println(Name)
 
 	c.Flash.Success(fmt.Sprintf("%sを作成しました。", Name))
 	return c.Redirect(routes.Svn.Index())

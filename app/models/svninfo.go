@@ -1,9 +1,9 @@
 package models
 
 import (
-	"github.com/revel/revel"
 	"os/exec"
 	"path/filepath"
+	"svnadmin/app/libs"
 )
 
 type Svninfo struct {
@@ -14,17 +14,9 @@ type Svninfo struct {
 	LastAuthor string
 }
 
-func GetSvnLookBin() string {
-	return revel.Config.StringDefault("svn.svnlook", "svnlook")
-}
-
-func GetSvnUrlBase() string {
-	return revel.Config.StringDefault("svn.url", "http://xxxxxxxxx/")
-}
-
 func GetSvninfoList(list []string) []Svninfo {
-	svn_url_base := GetSvnUrlBase()
-	svnlook := GetSvnLookBin()
+	svn_url_base := libs.GetSvnUrlBase()
+	svnlook := libs.GetSvnLookBin()
 
 	var svninfos []Svninfo
 	for _, path := range list {
