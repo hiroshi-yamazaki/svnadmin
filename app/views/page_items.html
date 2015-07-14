@@ -1,5 +1,5 @@
 <div>
-{{if $.page.Total eq 0}}
+{{if eq $.page.Total 0}}
 データがありません。
 {{else}}
 全<span>{{$.page.Total}}</span>件中<span>{{$.page.Start}}</span>～<span>{{$.page.End}}</span>件表示しています。
