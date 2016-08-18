@@ -94,25 +94,35 @@ func (p Pager) getNext(page int, max_page int) int {
 	return next
 }
 
-func (p Pager) getPages(current int, max_pages int) []int {
+func (p Pager) getLeftPages(current int, max_pages int) []int {
 	var pages []int
-
 	left := p.Left
-	for i := current - 1; i > 0 || left < 1; i-- {
+	for i := current - 1; i > 0 && left >= 1; i-- {
 		left--
-		p := []int{
+		p := []int {
 			i,
 		}
 		pages = append(p, pages...)
 	}
 
-	pages = append(pages, current)
+	return pages
+}
 
+func (p Pager) getRightPages(current int, max_pages int, pages []int) []int {
 	right := p.Right
-	for i := current + 1; i <= max_pages || right < 1; i++ {
+	for i := current + 1; i <= max_pages && right >= 1; i++ {
 		right--
 		pages = append(pages, i)
 	}
+
+	return pages
+}
+
+func (p Pager) getPages(current int, max_pages int) []int {
+	var pages []int
+	pages = p.getLeftPages(current, max_pages)
+	pages = append(pages, current)
+	pages = p.getRightPages(current, max_pages, pages)
 
 	return pages
 }
